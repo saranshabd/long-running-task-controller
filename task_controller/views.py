@@ -2,11 +2,13 @@
 API views of ``task_controller`` app
 """
 
+from rest_framework import status
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from task_controller.models import TaskStatusController
+from task_controller import constants
 from task_controller.serializers import (TaskStatusControllerSerializer,
                                    UpdateTaskStatusControllerSerializer)
 
@@ -21,7 +23,7 @@ class TaskControllerViewSet(mixins.RetrieveModelMixin,
     queryset = TaskStatusController.objects.all()
     serializer_class = TaskStatusControllerSerializer
 
-    def update(self, request, pk=None):
+    def update(self, request, pk=None): # pylint: disable=invalid-name
         """
         Update ``desired_status`` of task controller of a particular task
         """
@@ -30,10 +32,16 @@ class TaskControllerViewSet(mixins.RetrieveModelMixin,
         serializer = UpdateTaskStatusControllerSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
+        task_controller = TaskStatusController.objects.get(id=pk)
+        if task_controller.current_status == constants.TERMINATE_TASK_STATUS:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={
+                "detail": "Operation cannot be performed on terminated task."
+            })
+
         serializer.save()
 
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=["GET"], url_path="filter")
     def get_filtered(self, request):
         """
