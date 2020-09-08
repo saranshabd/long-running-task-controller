@@ -27,7 +27,7 @@ api_docs_urlpatterns = [
 ]
 
 api_urlpatterns = [
-    path("some_task/", include("some_task.urls")),
+    path("task_controller/", include("task_controller.urls")),
 ]
 
 urlpatterns = [

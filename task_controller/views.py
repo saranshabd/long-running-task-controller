@@ -1,23 +1,39 @@
 """
-API views of "some_task" app
+API views of ``task_controller`` app
 """
 
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from some_task.models import TaskStatusController
-from some_task.serializers import (TaskStatusControllerSerializer,
+from task_controller.models import TaskStatusController
+from task_controller.serializers import (TaskStatusControllerSerializer,
                                    UpdateTaskStatusControllerSerializer)
 
 
-class OverallTaskControllerViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class TaskControllerViewSet(mixins.RetrieveModelMixin,
+                            mixins.ListModelMixin,
+                            viewsets.GenericViewSet):
     """
-    Overall task controller API to view all/filtered tasks
+    Task controller API to set the status of any long-running task
     """
+
     queryset = TaskStatusController.objects.all()
     serializer_class = TaskStatusControllerSerializer
 
+    def update(self, request, pk=None):
+        """
+        Update ``desired_status`` of task controller of a particular task
+        """
+
+        instance = self.get_object()
+        serializer = UpdateTaskStatusControllerSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return Response(serializer.data)
+    
     @action(detail=False, methods=["GET"], url_path="filter")
     def get_filtered(self, request):
         """
@@ -41,29 +57,4 @@ class OverallTaskControllerViewSet(mixins.ListModelMixin, viewsets.GenericViewSe
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-# pylint: disable=too-many-ancestors
-class GenericTaskControllerViewSet(mixins.RetrieveModelMixin,
-                                  mixins.CreateModelMixin,
-                                  viewsets.GenericViewSet):
-    """
-    Generic task controller API to set the status of any long-running task
-    """
-
-    queryset = TaskStatusController.objects.all()
-    serializer_class = TaskStatusControllerSerializer
-
-    def update(self, request, pk=None):
-        """
-        Update ``desired_status`` of task controller of a particular task
-        """
-
-        instance = self.get_object()
-        serializer = UpdateTaskStatusControllerSerializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-
         return Response(serializer.data)

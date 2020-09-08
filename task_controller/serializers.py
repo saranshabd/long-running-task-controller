@@ -1,10 +1,10 @@
 """
-Database schema serializers of "some_task" app
+Database schema serializers of ``task_controller`` app
 """
 
 from rest_framework import serializers
 
-from some_task.models import TaskStatusController
+from task_controller.models import TaskStatusController
 
 
 class TaskStatusControllerSerializer(serializers.ModelSerializer):
