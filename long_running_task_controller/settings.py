@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     'task_controller',
+    'sample_task',
 ]
 
 MIDDLEWARE = [

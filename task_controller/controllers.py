@@ -2,8 +2,13 @@
 Controller classes for real-time task management
 """
 
+import logging
+
 from task_controller.models import TaskStatusController
 from task_controller import constants
+
+LOG = logging.getLogger(__name__)
+
 
 class TaskStatusControllerMaster:
     """
@@ -21,6 +26,7 @@ class TaskStatusControllerMaster:
         """
         task_controller = TaskStatusController.objects.create()
         self.task_id = task_controller.id
+        LOG.debug("%s: initiated", self.task_id)
 
     def start_task(self):
         """
@@ -29,6 +35,17 @@ class TaskStatusControllerMaster:
         """
         task_controller = TaskStatusController.objects.filter(id=self.task_id)
         task_controller.update(current_status=constants.RUN_TASK_STATUS)
+        LOG.debug("%s: started", self.task_id)
+
+    def resume_task(self):
+        """
+        Set current status of the task as running. This method cannot  be called on a
+        terminated task.
+        """
+        task_controller = TaskStatusController.objects.filter(id=self.task_id)
+        if task_controller[0].current_status != constants.TERMINATE_TASK_STATUS:
+            task_controller.update(current_status=constants.RUN_TASK_STATUS)
+        LOG.debug("%s: resuming", self.task_id)
 
     def suspend_task(self):
         """
@@ -37,6 +54,7 @@ class TaskStatusControllerMaster:
         """
         task_controller = TaskStatusController.objects.filter(id=self.task_id)
         task_controller.update(current_status=constants.SUSPEND_TASK_STATUS)
+        LOG.debug("%s: suspended", self.task_id)
 
     def terminate_task(self):
         """
@@ -45,6 +63,7 @@ class TaskStatusControllerMaster:
         """
         task_controller = TaskStatusController.objects.filter(id=self.task_id)
         task_controller.update(current_status=constants.TERMINATE_TASK_STATUS)
+        LOG.debug("%s: terminated", self.task_id)
 
     @property
     def task_desired_status(self):
